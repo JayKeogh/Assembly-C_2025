@@ -1,0 +1,52 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 28/01/2025 10:48:15
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9      
+00001000  43F9 00001026             10      LEA PLAYER_POINTS, A1
+00001006  0611 0014                 11      ADD.B #20, (A1)
+0000100A                            12      
+0000100A  45F9 00001027             13      LEA PLAYER_HEALTH, A2
+00001010  0412 000A                 14      SUB.B #10, (A2)
+00001014                            15      
+00001014  47F9 00001028             16      LEA BOSS_HEALTH, A3
+0000101A  1239 00001029             17      MOVE.B ATTACK1, D1
+00001020  9313                      18      SUB.B D1, (A3)
+00001022                            19      
+00001022                            20      
+00001022                            21      
+00001022                            22  
+00001022  FFFF FFFF                 23      SIMHALT             ; halt simulator
+00001026                            24  
+00001026= 32                        25  PLAYER_POINTS dc.b 50
+00001027= 64                        26  PLAYER_HEALTH dc.b 100
+00001028= 64                        27  BOSS_HEALTH dc.b 100
+00001029= 4B                        28  ATTACK1 dc.b 75
+0000102A= 5A                        29  ATTACK2 dc.b 90
+0000102B= C8                        30  ULTIMATE dc.b 200
+0000102C                            31  
+0000102C                            32  
+0000102C                            33      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ATTACK1             1029
+ATTACK2             102A
+BOSS_HEALTH         1028
+PLAYER_HEALTH       1027
+PLAYER_POINTS       1026
+START               1000
+ULTIMATE            102B

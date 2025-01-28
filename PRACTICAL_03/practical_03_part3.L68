@@ -1,0 +1,17 @@
+*-----------------------------------------------------------
+* Title      :
+* Written by :
+* Date       :
+* Description:
+*-----------------------------------------------------------
+    ORG    $1000
+START:                  ; first instruction of program
+
+    LEA HEALTH, A3
+    SUB.B #10, (A3)
+
+    SIMHALT             ; halt simulator
+
+HEALTH dc.b $64
+
+    END    START        ; last line of source
