@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 28/01/2025 10:48:15
+Created On: 28/01/2025 13:28:09
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -11,30 +11,46 @@ Created On: 28/01/2025 10:48:15
 00001000                             7      ORG    $1000
 00001000                             8  START:                  ; first instruction of program
 00001000                             9      
-00001000  43F9 00001026             10      LEA PLAYER_POINTS, A1
+00001000  43F9 0000105E             10      LEA PLAYER_POINTS, A1
 00001006  0611 0014                 11      ADD.B #20, (A1)
 0000100A                            12      
-0000100A  45F9 00001027             13      LEA PLAYER_HEALTH, A2
-00001010  0412 000A                 14      SUB.B #10, (A2)
-00001014                            15      
-00001014  47F9 00001028             16      LEA BOSS_HEALTH, A3
-0000101A  1239 00001029             17      MOVE.B ATTACK1, D1
-00001020  9313                      18      SUB.B D1, (A3)
-00001022                            19      
-00001022                            20      
-00001022                            21      
-00001022                            22  
-00001022  FFFF FFFF                 23      SIMHALT             ; halt simulator
-00001026                            24  
-00001026= 32                        25  PLAYER_POINTS dc.b 50
-00001027= 64                        26  PLAYER_HEALTH dc.b 100
-00001028= 64                        27  BOSS_HEALTH dc.b 100
-00001029= 4B                        28  ATTACK1 dc.b 75
-0000102A= 5A                        29  ATTACK2 dc.b 90
-0000102B= C8                        30  ULTIMATE dc.b 200
-0000102C                            31  
-0000102C                            32  
-0000102C                            33      END    START        ; last line of source
+0000100A  43F9 0000105E             13      LEA PLAYER_POINTS, A1
+00001010  5B11                      14      SUB.B #5, (A1)
+00001012                            15      
+00001012  45F9 0000105F             16      LEA PLAYER_HEALTH, A2
+00001018  0612 0014                 17      ADD.B #20, (A2)
+0000101C                            18      
+0000101C  45F9 0000105F             19      LEA PLAYER_HEALTH, A2
+00001022  0412 000A                 20      SUB.B #10, (A2)
+00001026                            21      
+00001026  47F9 00001060             22      LEA BOSS_HEALTH, A3
+0000102C  0613 000F                 23      ADD.B #15, (A3)
+00001030                            24      
+00001030  47F9 00001060             25      LEA BOSS_HEALTH, A3
+00001036  1239 00001062             26      MOVE.B ATTACK2, D1
+0000103C  9313                      27      SUB.B D1, (A3)
+0000103E                            28      
+0000103E  49F9 00001060             29      LEA BOSS_HEALTH, A4
+00001044  1439 00001061             30      MOVE.B ATTACK1, D2
+0000104A  9514                      31      SUB.B D2, (A4)
+0000104C                            32  
+0000104C  4BF9 00001060             33      LEA BOSS_HEALTH, A5
+00001052  1639 00001063             34      MOVE.B ULTIMATE, D3
+00001058  9715                      35      SUB.B D3, (A5)    
+0000105A                            36      
+0000105A                            37      
+0000105A                            38  
+0000105A  FFFF FFFF                 39      SIMHALT             ; halt simulator
+0000105E                            40  
+0000105E= 32                        41  PLAYER_POINTS dc.b 50
+0000105F= 64                        42  PLAYER_HEALTH dc.b 100
+00001060= 64                        43  BOSS_HEALTH dc.b 100
+00001061= 4B                        44  ATTACK1 dc.b 75
+00001062= 5A                        45  ATTACK2 dc.b 90
+00001063= C8                        46  ULTIMATE dc.b 200
+00001064                            47  
+00001064                            48  
+00001064                            49      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -43,10 +59,10 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ATTACK1             1029
-ATTACK2             102A
-BOSS_HEALTH         1028
-PLAYER_HEALTH       1027
-PLAYER_POINTS       1026
+ATTACK1             1061
+ATTACK2             1062
+BOSS_HEALTH         1060
+PLAYER_HEALTH       105F
+PLAYER_POINTS       105E
 START               1000
-ULTIMATE            102B
+ULTIMATE            1063

@@ -1,0 +1,46 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 28/01/2025 13:29:11
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9  
+00001000  227C 00001020             10      MOVEA.L #ACHIEVMENT_POINTS, A1
+00001006  7000                      11      MOVE.L #0, D0
+00001008                            12      
+00001008  2419                      13      MOVE.L (A1)+, D2
+0000100A  D082                      14      ADD.L D2, D0
+0000100C                            15      
+0000100C  2419                      16      MOVE.L (A1)+, D2
+0000100E  D082                      17      ADD.L D2, D0
+00001010                            18      
+00001010  2419                      19      MOVE.L (A1)+, D2
+00001012  D082                      20      ADD.L D2, D0
+00001014                            21      
+00001014  2419                      22      MOVE.L (A1)+, D2
+00001016  D082                      23      ADD.L D2, D0
+00001018                            24      
+00001018  2419                      25      MOVE.L (A1)+, D2
+0000101A  D082                      26      ADD.L D2, D0
+0000101C                            27      
+0000101C  FFFF FFFF                 28      SIMHALT             ; halt simulator
+00001020                            29  
+00001020= 00000005 0000000A ...     30  ACHIEVMENT_POINTS:  DC.L 5, 10, 15, 20, 30
+00001034                            31  
+00001034                            32      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ACHIEVMENT_POINTS   1020
+START               1000
