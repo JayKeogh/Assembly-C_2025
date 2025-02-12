@@ -1,0 +1,49 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 12/02/2025 12:45:26
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9  
+00001000                            10  INITIALISE:
+00001000  103C 0003                 11      MOVE.B #3, D0
+00001004  123C 0000                 12      MOVE.B #0, D1
+00001008                            13      
+00001008                            14  GAME_LOOP:
+00001008  B03C 0001                 15      CMP.B #1, D0
+0000100C  6600 0006                 16      BNE GAME_POINTS
+Line 17 ERROR: Undefined symbol
+00001010  6700 AD04                 17      BEQ GAME_OVER
+00001014                            18      
+00001014                            19  GAME_POINTS:
+00001014  0601 000A                 20      ADD.B #10, D1
+00001018  5300                      21      SUB.B #1, D0
+0000101A  60EC                      22      BRA   GAME_LOOP
+0000101C                            23      
+0000101C                            24  GAME_0VER:
+0000101C                            25     
+0000101C                            26  
+0000101C  FFFF FFFF                 27      SIMHALT             ; halt simulator
+00001020                            28  
+00001020                            29  * Put variables and constants here
+00001020                            30  
+00001020                            31      END    START        ; last line of source
+
+1 error detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+GAME_0VER           101C
+GAME_LOOP           1008
+GAME_POINTS         1014
+INITIALISE          1000
+START               1000
