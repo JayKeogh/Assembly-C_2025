@@ -1,0 +1,644 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 07/03/2025 16:28:45
+
+00000000                             1  *-------------------------------------------------------
+00000000                             2  * STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
+00000000                             3  *-------------------------------------------------------
+00001000                             4      ORG $1000
+00001000                             5  *-------------------------------------------------------
+00001000                             6  * CHOOSE YOUR STARTER POKEMON
+00001000                             7  *-------------------------------------------------------
+00001000                             8  
+00001000                             9  *-------------------------------------------------------
+00001000                            10  * VALIDATION VALUES TO BE USED, MODIFY AS NEEDED
+00001000                            11  *-------------------------------------------------------
+00001000  =00000000                 12  EXIT        EQU 0           ; USED TO EXIT ASSEMBLY PROGRAM
+00001000  =00000001                 13  MIN_HP      EQU 1           ; MIN HP FOR POKEMON
+00001000  =00000019                 14  MAX_HP      EQU 25          ; MAX HP FOR POKEMON
+00001000  =00000005                 15  WIN_POINT   EQU 5           ; POINTS GAINED ON WIN
+00001000  =00000008                 16  LOSE_POINT  EQU 8           ; POINTS LOST ON LOSS
+00001000  =00000005                 17  MAX_POKEBALLS EQU 5         ; MAX NUMBER OF POKEBALLS
+00001000                            18  
+00001000                            19  * START OF GAME
+00001000                            20  START:
+00001000  11FC 0064 4000            21      MOVE.B  #100,$4000      ; PUT POINTS IN MEMORY LOCATION $4000
+00001006  47F8 4000                 22      LEA     $4000,A3        ; ASSIGN ADDRESS A3 TO THAT MEMORY LOCATION
+0000100A  13FC 0005 000038E4        23      MOVE.B  #MAX_POKEBALLS,POKEBALLS ; INITIALIZE POKEBALLS
+00001012                            24  
+00001012  6100 1FF6                 25      BSR     WELCOME         ; BRANCH TO THE WELCOME SUBROUTINE
+00001016  6100 200C                 26      BSR     CHOOSE_POKEMON  ; BRANCH TO CHOOSE POKEMON SUBROUTINE
+0000101A  6100 20F6                 27      BSR     BATTLE          ; BRANCH TO BATTLE SUBROUTINE
+0000101E  6100 2304                 28      BSR     CHOOSE_PATH     ; BRANCH TO CHOOSE PATH SUBROUTINE
+00001022  6100 20B8                 29      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+00001026                            30  
+00001026                            31  * GAME LOOP
+00003000                            32      ORG     $3000           ; THE REST OF THE PROGRAM IS TO BE LOCATED FROM $3000 ONWARDS
+00003000                            33  
+00003000                            34  *-------------------------------------------------------
+00003000                            35  *-------------------GAME SUBROUTINE---------------------
+00003000                            36  *-------------------------------------------------------
+00003000                            37  GAME:
+00003000  6100 00DA                 38      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+00003004  4E75                      39      RTS                     ; RETURN FROM GAME: SUBROUTINE
+00003006                            40  
+00003006                            41  END:
+00003006  FFFF FFFF                 42      SIMHALT
+0000300A                            43  
+0000300A                            44  *-------------------------------------------------------
+0000300A                            45  *-------------------WELCOME SUBROUTINE------------------
+0000300A                            46  *-------------------------------------------------------
+0000300A                            47  WELCOME:
+0000300A  6100 0302                 48      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+0000300E  43F9 0000346F             49      LEA     WELCOME_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003014  103C 000E                 50      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003018  4E4F                      51      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000301A  6100 02F2                 52      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+0000301E  6100 02D6                 53      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003022  4E75                      54      RTS                     ; RETURN FROM WELCOME: SUBROUTINE
+00003024                            55  
+00003024                            56  *-------------------------------------------------------
+00003024                            57  *---------CHOOSE POKEMON SUBROUTINE---------------------
+00003024                            58  *-------------------------------------------------------
+00003024                            59  CHOOSE_POKEMON:
+00003024  6100 02E8                 60      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003028  43F9 0000357A             61      LEA     CHOOSE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000302E  103C 000E                 62      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003032  4E4F                      63      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003034  6100 02D8                 64      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003038                            65  
+00003038  103C 0004                 66      MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+0000303C  4E4F                      67      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000303E                            68  
+0000303E  B27C 0001                 69      CMP     #1,D1           ; COMPARE D1 TO 1
+00003042  6700 001A                 70      BEQ     SELECT_BULBASAUR ; IF EQUAL, BRANCH TO SELECT_BULBASAUR
+00003046  B27C 0002                 71      CMP     #2,D1           ; COMPARE D1 TO 2
+0000304A  6700 002C                 72      BEQ     SELECT_CHARMANDER ; IF EQUAL, BRANCH TO SELECT_CHARMANDER
+0000304E  B27C 0003                 73      CMP     #3,D1           ; COMPARE D1 TO 3
+00003052  6700 003E                 74      BEQ     SELECT_SQUIRTLE ; IF EQUAL, BRANCH TO SELECT_SQUIRTLE
+00003056  6100 0054                 75      BSR     INVALID_CHOICE  ; ELSE, BRANCH TO INVALID_CHOICE
+0000305A  61C8                      76      BSR     CHOOSE_POKEMON  ; RETRY CHOOSING POKEMON
+0000305C  4E75                      77      RTS                     ; RETURN FROM CHOOSE_POKEMON: SUBROUTINE
+0000305E                            78  
+0000305E                            79  SELECT_BULBASAUR:
+0000305E  45F9 000036A9             80      LEA     BULBASAUR_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+00003064  13FC 0019 00003696        81      MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+0000306C  49F9 0000388C             82      LEA     BULBASAUR_ATTACKS,A4 ; LOAD BULBASAUR ATTACKS
+00003072  6100 0046                 83      BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+00003076  4E75                      84      RTS                     ; RETURN FROM SELECT_BULBASAUR: SUBROUTINE
+00003078                            85  
+00003078                            86  SELECT_CHARMANDER:
+00003078  45F9 000036B3             87      LEA     CHARMANDER_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+0000307E  13FC 0019 00003696        88      MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+00003086  49F9 00003892             89      LEA     CHARMANDER_ATTACKS,A4 ; LOAD CHARMANDER ATTACKS
+0000308C  6100 002C                 90      BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+00003090  4E75                      91      RTS                     ; RETURN FROM SELECT_CHARMANDER: SUBROUTINE
+00003092                            92  
+00003092                            93  SELECT_SQUIRTLE:
+00003092  45F9 000036BE             94      LEA     SQUIRTLE_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+00003098  13FC 0019 00003696        95      MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+000030A0  49F9 00003898             96      LEA     SQUIRTLE_ATTACKS,A4 ; LOAD SQUIRTLE ATTACKS
+000030A6  6100 0012                 97      BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+000030AA  4E75                      98      RTS                     ; RETURN FROM SELECT_SQUIRTLE: SUBROUTINE
+000030AC                            99  
+000030AC                           100  INVALID_CHOICE:
+000030AC  43F9 000036C7            101      LEA     INVALID_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000030B2  103C 000E                102      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000030B6  4E4F                     103      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000030B8  4E75                     104      RTS                     ; RETURN FROM INVALID_CHOICE: SUBROUTINE
+000030BA                           105  
+000030BA                           106  DISPLAY_SELECTION:
+000030BA  6100 0252                107      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000030BE  43F9 0000369B            108      LEA     SELECTED_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000030C4  103C 000E                109      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000030C8  4E4F                     110      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000030CA  224A                     111      MOVE.L  A2,A1           ; MOVE POKEMON NAME ADDRESS TO A1
+000030CC  103C 000E                112      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000030D0  4E4F                     113      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000030D2  6100 023A                114      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000030D6  6100 021E                115      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+000030DA  4E75                     116      RTS                     ; RETURN FROM DISPLAY_SELECTION: SUBROUTINE
+000030DC                           117  
+000030DC                           118  *-------------------------------------------------------
+000030DC                           119  *----------------GAMELOOP (MAIN LOOP)-------------------
+000030DC                           120  *-------------------------------------------------------
+000030DC                           121  GAMELOOP:
+000030DC  6100 0034                122      BSR     BATTLE          ; BRANCH TO BATTLE SUBROUTINE
+000030E0  6100 000C                123      BSR     UPDATE          ; BRANCH TO UPDATE GAME SUBROUTINE
+000030E4  6100 0194                124      BSR     HUD             ; BRANCH TO HUD SUBROUTINE
+000030E8  6100 01EA                125      BSR     REPLAY          ; BRANCH TO REPLAY SUBROUTINE
+000030EC  4E75                     126      RTS                     ; RETURN FROM GAMELOOP: SUBROUTINE
+000030EE                           127  
+000030EE                           128  *-------------------------------------------------------
+000030EE                           129  *----------------UPDATE QUEST PROGRESS------------------
+000030EE                           130  * COMPLETE QUEST
+000030EE                           131  *-------------------------------------------------------
+000030EE                           132  UPDATE:
+000030EE  6100 021E                133      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000030F2  43F9 000035B5            134      LEA     UPDATE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000030F8  103C 000E                135      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000030FC  4E4F                     136      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000030FE  4E75                     137      RTS
+00003100                           138  
+00003100                           139  *-------------------------------------------------------
+00003100                           140  *-----------------DRAW QUEST UPDATES--------------------
+00003100                           141  * DRAW THE GAME PROGRESS INFORMATION, STATUS REGARDING
+00003100                           142  * QUEST
+00003100                           143  *-------------------------------------------------------
+00003100                           144  DRAW:
+00003100  6100 020C                145      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003104  43F9 000035CF            146      LEA     DRAW_MSG,A1     ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000310A  103C 000E                147      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000310E  4E4F                     148      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003110  4E75                     149      RTS                     ; RETURN FROM DRAW: SUBROUTINE
+00003112                           150  
+00003112                           151  *-------------------------------------------------------
+00003112                           152  *--------------------BATTLE SUBROUTINE------------------
+00003112                           153  *-------------------------------------------------------
+00003112                           154  BATTLE:
+00003112  13FC 0019 00003698       155      MOVE.B  #MAX_HP,OPPONENT_HP ; SET OPPONENT HP TO MAX
+0000311A  13FC 0019 00003696       156      MOVE.B  #MAX_HP,PLAYER_HP   ; RESTORE PLAYER HP TO MAX
+00003122  6100 01EA                157      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003126  43F9 0000359C            158      LEA     BATTLE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000312C  103C 000E                159      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003130  4E4F                     160      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003132                           161  
+00003132  4239 0000369A            162      CLR.B   BATTLE_ENDED    ; CLEAR BATTLE ENDED FLAG
+00003138                           163  
+00003138                           164  BATTLE_LOOP:
+00003138  6100 0140                165      BSR     HUD             ; UPDATE HUD BEFORE EACH TURN
+0000313C  6100 0026                166      BSR     PLAYER_TURN     ; PLAYER'S TURN
+00003140  6100 00E6                167      BSR     CHECK_WIN_CONDITION ; CHECK WIN CONDITION
+00003144  4A39 0000369A            168      TST.B   BATTLE_ENDED    ; CHECK IF BATTLE ENDED
+0000314A  6600 0016                169      BNE     BATTLE_EXIT     ; IF BATTLE ENDED, EXIT LOOP
+0000314E  6100 0076                170      BSR     OPPONENT_TURN   ; OPPONENT'S TURN
+00003152  6100 00D4                171      BSR     CHECK_WIN_CONDITION ; CHECK WIN CONDITION
+00003156  4A39 0000369A            172      TST.B   BATTLE_ENDED    ; CHECK IF BATTLE ENDED
+0000315C  6600 0004                173      BNE     BATTLE_EXIT     ; IF BATTLE ENDED, EXIT LOOP
+00003160  60D6                     174      BRA     BATTLE_LOOP     ; REPEAT BATTLE LOOP
+00003162                           175  
+00003162                           176  BATTLE_EXIT:
+00003162  4E75                     177      RTS                     ; RETURN FROM BATTLE SUBROUTINE
+00003164                           178  
+00003164                           179  PLAYER_TURN:
+00003164  43F9 00003676            180      LEA     PLAYER_ATTACK_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000316A  103C 000E                181      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000316E  4E4F                     182      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003170  103C 0004                183      MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+00003174  4E4F                     184      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003176                           185      ; Assume D1 contains the chosen attack (1-3)
+00003176  B27C 0001                186      CMP     #1,D1           ; COMPARE D1 TO 1
+0000317A  6700 0014                187      BEQ     PLAYER_ATTACK_1 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_1
+0000317E  B27C 0002                188      CMP     #2,D1           ; COMPARE D1 TO 2
+00003182  6700 001C                189      BEQ     PLAYER_ATTACK_2 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_2
+00003186  B27C 0003                190      CMP     #3,D1           ; COMPARE D1 TO 3
+0000318A  6700 0026                191      BEQ     PLAYER_ATTACK_3 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_3
+0000318E  4E75                     192      RTS                     ; RETURN FROM PLAYER_TURN
+00003190                           193  
+00003190                           194  PLAYER_ATTACK_1:
+00003190  43D4                     195      LEA     (A4),A1         ; LOAD ATTACK NAME
+00003192  103C 000E                196      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003196  4E4F                     197      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003198  5B39 00003698            198      SUB.B   #5,OPPONENT_HP  ; SUBTRACT 5 FROM OPPONENT HP
+0000319E  4E75                     199      RTS                     ; RETURN FROM PLAYER_ATTACK_1
+000031A0                           200  
+000031A0                           201  PLAYER_ATTACK_2:
+000031A0  43EC 0002                202      LEA     2(A4),A1        ; LOAD ATTACK NAME
+000031A4  103C 000E                203      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000031A8  4E4F                     204      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000031AA  5F39 00003698            205      SUB.B   #7,OPPONENT_HP  ; SUBTRACT 7 FROM OPPONENT HP
+000031B0  4E75                     206      RTS                     ; RETURN FROM PLAYER_ATTACK_2
+000031B2                           207  
+000031B2                           208  PLAYER_ATTACK_3:
+000031B2  43EC 0004                209      LEA     4(A4),A1        ; LOAD ATTACK NAME
+000031B6  103C 000E                210      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000031BA  4E4F                     211      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000031BC  0439 000A 00003698       212      SUB.B   #10,OPPONENT_HP ; SUBTRACT 10 FROM OPPONENT HP
+000031C4  4E75                     213      RTS                     ; RETURN FROM PLAYER_ATTACK_3
+000031C6                           214  
+000031C6                           215  OPPONENT_TURN:
+000031C6  103C 0001                216      MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+000031CA  4E4F                     217      TRAP    #15             ; GENERATE RANDOM NUMBER
+000031CC  1401                     218      MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+000031CE  C43C 0003                219      AND.B   #%00000011,D2   ; KEEP ONLY THE LOWER 2 BITS (0-3)
+000031D2  B47C 0001                220      CMP     #1,D2           ; COMPARE WITH 1
+000031D6  6700 0014                221      BEQ     OPPONENT_ATTACK_1 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_1
+000031DA  B47C 0002                222      CMP     #2,D2           ; COMPARE WITH 2
+000031DE  6700 0020                223      BEQ     OPPONENT_ATTACK_2 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_2
+000031E2  B47C 0003                224      CMP     #3,D2           ; COMPARE WITH 3
+000031E6  6700 002C                225      BEQ     OPPONENT_ATTACK_3 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_3
+000031EA  4E75                     226      RTS                     ; RETURN FROM OPPONENT_TURN
+000031EC                           227  
+000031EC                           228  OPPONENT_ATTACK_1:
+000031EC  43F9 0000389E            229      LEA     OPPONENT_ATTACK_1_MSG,A1 ; LOAD ATTACK NAME
+000031F2  103C 000E                230      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000031F6  4E4F                     231      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000031F8  5939 00003696            232      SUB.B   #4,PLAYER_HP    ; SUBTRACT 4 FROM PLAYER HP
+000031FE  4E75                     233      RTS                     ; RETURN FROM OPPONENT_ATTACK_1
+00003200                           234  
+00003200                           235  OPPONENT_ATTACK_2:
+00003200  43F9 000038B4            236      LEA     OPPONENT_ATTACK_2_MSG,A1 ; LOAD ATTACK NAME
+00003206  103C 000E                237      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000320A  4E4F                     238      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000320C  5D39 00003696            239      SUB.B   #6,PLAYER_HP    ; SUBTRACT 6 FROM PLAYER HP
+00003212  4E75                     240      RTS                     ; RETURN FROM OPPONENT_ATTACK_2
+00003214                           241  
+00003214                           242  OPPONENT_ATTACK_3:
+00003214  43F9 000038D0            243      LEA     OPPONENT_ATTACK_3_MSG,A1 ; LOAD ATTACK NAME
+0000321A  103C 000E                244      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000321E  4E4F                     245      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003220  5139 00003696            246      SUB.B   #8,PLAYER_HP    ; SUBTRACT 8 FROM PLAYER HP
+00003226  4E75                     247      RTS                     ; RETURN FROM OPPONENT_ATTACK_3
+00003228                           248  
+00003228                           249  CHECK_WIN_CONDITION:
+00003228  0C79 0000 00003696       250      CMP     #0,PLAYER_HP    ; COMPARE PLAYER HP TO 0
+00003230  6F00 002C                251      BLE     LOSE            ; IF LESS OR EQUAL, BRANCH TO LOSE
+00003234  0C79 0000 00003698       252      CMP     #0,OPPONENT_HP  ; COMPARE OPPONENT HP TO 0
+0000323C  6F00 0004                253      BLE     WIN             ; IF LESS OR EQUAL, BRANCH TO WIN
+00003240  4E75                     254      RTS                     ; RETURN FROM CHECK_WIN_CONDITION
+00003242                           255  
+00003242                           256  WIN:
+00003242  43F9 000035E9            257      LEA     WIN_MSG,A1      ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003248  103C 000E                258      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000324C  4E4F                     259      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000324E  1213                     260      MOVE.B  (A3),D1         ; LOAD CURRENT SCORE
+00003250  5A01                     261      ADD.B   #WIN_POINT,D1   ; ADD WIN POINTS TO SCORE
+00003252  1681                     262      MOVE.B  D1,(A3)         ; STORE UPDATED SCORE
+00003254  13FC 0001 0000369A       263      MOVE.B  #1,BATTLE_ENDED ; SET BATTLE ENDED FLAG
+0000325C  4E75                     264      RTS                     ; RETURN FROM WIN: SUBROUTINE
+0000325E                           265  
+0000325E                           266  LOSE:
+0000325E  43F9 000035FD            267      LEA     LOSE_MSG,A1     ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003264  103C 000E                268      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003268  4E4F                     269      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000326A  1213                     270      MOVE.B  (A3),D1         ; LOAD CURRENT SCORE
+0000326C  5101                     271      SUB.B   #LOSE_POINT,D1  ; SUBTRACT LOSE POINTS FROM SCORE
+0000326E  1681                     272      MOVE.B  D1,(A3)         ; STORE UPDATED SCORE
+00003270  13FC 0001 0000369A       273      MOVE.B  #1,BATTLE_ENDED ; SET BATTLE ENDED FLAG
+00003278  4E75                     274      RTS                     ; RETURN FROM LOSE: SUBROUTINE
+0000327A                           275  
+0000327A                           276  HUD:
+0000327A  6100 0092                277      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+0000327E  43F9 0000365C            278      LEA     HUD_MSG,A1      ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003284  103C 000E                279      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003288  4E4F                     280      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000328A  1239 00003696            281      MOVE.B  PLAYER_HP,D1    ; LOAD PLAYER HP
+00003290  103C 0003                282      MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+00003294  4E4F                     283      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003296  6100 0076                284      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+0000329A  43F9 00003668            285      LEA     OPPONENT_HUD_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000032A0  103C 000E                286      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000032A4  4E4F                     287      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032A6  1239 00003698            288      MOVE.B  OPPONENT_HP,D1  ; LOAD OPPONENT HP
+000032AC  103C 0003                289      MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+000032B0  4E4F                     290      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032B2  6100 005A                291      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000032B6  43F9 00003864            292      LEA     POKEBALLS_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000032BC  103C 000E                293      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000032C0  4E4F                     294      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032C2  1239 000038E4            295      MOVE.B  POKEBALLS,D1    ; LOAD POKEBALLS COUNT
+000032C8  103C 0003                296      MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+000032CC  4E4F                     297      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032CE  6100 003E                298      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000032D2  4E75                     299      RTS                     ; RETURN FROM HUD: SUBROUTINE
+000032D4                           300  
+000032D4                           301  *-------------------------------------------------------
+000032D4                           302  *------------------------REPLAY-------------------------
+000032D4                           303  *-------------------------------------------------------
+000032D4                           304  REPLAY:
+000032D4  6100 0038                305      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000032D8  43F9 00003612            306      LEA     REPLAY_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000032DE  103C 000E                307      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000032E2  4E4F                     308      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032E4                           309  
+000032E4  103C 0004                310      MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+000032E8  4E4F                     311      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000032EA                           312  
+000032EA  B27C 0000                313      CMP     #EXIT,D1        ; COMPARE D1 TO EXIT
+000032EE  6700 FD16                314      BEQ     END             ; IF EQUAL, BRANCH TO END
+000032F2  6100 FDE8                315      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+000032F6                           316  
+000032F6                           317  *-------------------------------------------------------
+000032F6                           318  *------------------------CONTINUE-------------------------
+000032F6                           319  *-------------------------------------------------------
+000032F6                           320  CONTINUE:
+000032F6  6100 0016                321      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000032FA  43F9 00003640            322      LEA     CONTINUE_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003300  103C 000E                323      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003304  4E4F                     324      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003306                           325  
+00003306  103C 0004                326      MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+0000330A  4E4F                     327      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000330C  4E75                     328      RTS                     ; RETURN FROM SUBROUTINE
+0000330E                           329  
+0000330E                           330  ENDL:
+0000330E  48E7 8040                331      MOVEM.L D0/A1,-(A7)     ; SAVE D0 AND A1
+00003312  303C 000E                332      MOVE    #14,D0          ; MOVE LITERAL 14 TO DO
+00003316  43F9 0000346C            333      LEA     CRLF,A1         ; ASSIGN CRLF TO ADDRESS REGISTER A1
+0000331C  4E4F                     334      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000331E  4CDF 0201                335      MOVEM.L (A7)+,D0/A1     ; RESTORE D0 AND A1
+00003322  4E75                     336      RTS                     ; RETURN FROM ENDL: SUBROUTINE
+00003324                           337  
+00003324                           338  *-------------------------------------------------------
+00003324                           339  *-------------------CHOOSE PATH SUBROUTINE------------------
+00003324                           340  *-------------------------------------------------------
+00003324                           341  CHOOSE_PATH:
+00003324  61E8                     342      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003326  43F9 000036E9            343      LEA     CHOOSE_PATH_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000332C  103C 000E                344      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003330  4E4F                     345      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003332  61DA                     346      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+00003334                           347  
+00003334  103C 0004                348      MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+00003338  4E4F                     349      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000333A                           350  
+0000333A  B27C 0001                351      CMP     #1,D1           ; COMPARE D1 TO 1
+0000333E  6700 0012                352      BEQ     PEWTER_CITY     ; IF EQUAL, BRANCH TO PEWTER_CITY
+00003342  B27C 0002                353      CMP     #2,D1           ; COMPARE D1 TO 2
+00003346  6700 001E                354      BEQ     CERULEAN_CITY   ; IF EQUAL, BRANCH TO CERULEAN_CITY
+0000334A  6100 FD60                355      BSR     INVALID_CHOICE  ; ELSE, BRANCH TO INVALID_CHOICE
+0000334E  61D4                     356      BSR     CHOOSE_PATH     ; RETRY CHOOSING PATH
+00003350  4E75                     357      RTS                     ; RETURN FROM CHOOSE_PATH: SUBROUTINE
+00003352                           358  
+00003352                           359  PEWTER_CITY:
+00003352  43F9 0000371D            360      LEA     BROCK_DIALOGUE,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003358  103C 000E                361      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000335C  4E4F                     362      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000335E  6196                     363      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003360  6100 0018                364      BSR     CATCH_SNORLAX    ; BRANCH TO CATCH_SNORLAX SUBROUTINE
+00003364  4E75                     365      RTS                     ; RETURN FROM PEWTER_CITY: SUBROUTINE
+00003366                           366  
+00003366                           367  CERULEAN_CITY:
+00003366  43F9 0000375A            368      LEA     MISTY_DIALOGUE,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000336C  103C 000E                369      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003370  4E4F                     370      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003372  6182                     371      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003374  6100 005C                372      BSR     CATCH_GYARADOS   ; BRANCH TO CATCH_GYARADOS SUBROUTINE
+00003378  4E75                     373      RTS                     ; RETURN FROM CERULEAN_CITY: SUBROUTINE
+0000337A                           374  
+0000337A                           375  *-------------------------------------------------------
+0000337A                           376  *-------------------CATCH SNORLAX SUBROUTINE------------------
+0000337A                           377  *-------------------------------------------------------
+0000337A                           378  CATCH_SNORLAX:
+0000337A  6192                     379      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+0000337C  43F9 0000379A            380      LEA     SNORLAX_MSG_1,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003382  103C 000E                381      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003386  4E4F                     382      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003388  6100 FF6C                383      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+0000338C                           384  
+0000338C                           385  CATCH_SNORLAX_LOOP:
+0000338C  6100 009E                386      BSR     THROW_POKEBALL  ; THROW POKEBALL
+00003390  6100 0010                387      BSR     CHECK_CATCH_SNORLAX ; CHECK IF SNORLAX IS CAUGHT
+00003394  0C79 0000 000038E4       388      CMP     #0,POKEBALLS    ; COMPARE POKEBALLS COUNT TO 0
+0000339C  6700 00B8                389      BEQ     NO_POKEBALLS    ; IF EQUAL, BRANCH TO NO_POKEBALLS
+000033A0  60EA                     390      BRA     CATCH_SNORLAX_LOOP ; RETRY CATCHING SNORLAX
+000033A2                           391  
+000033A2                           392  CHECK_CATCH_SNORLAX:
+000033A2  103C 0001                393      MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+000033A6  4E4F                     394      TRAP    #15             ; GENERATE RANDOM NUMBER
+000033A8  1401                     395      MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+000033AA  C43C 0001                396      AND.B   #%00000001,D2   ; KEEP ONLY THE LOWEST BIT (0 OR 1)
+000033AE  B47C 0000                397      CMP     #0,D2           ; COMPARE WITH 0
+000033B2  6700 0008                398      BEQ     CATCH_SNORLAX_SUCCESS ; IF EQUAL, BRANCH TO CATCH_SNORLAX_SUCCESS
+000033B6  6100 008C                399      BSR     CATCH_FAILURE   ; ELSE, BRANCH TO CATCH_FAILURE
+000033BA  4E75                     400      RTS                     ; RETURN FROM CHECK_CATCH_SNORLAX
+000033BC                           401  
+000033BC                           402  CATCH_SNORLAX_SUCCESS:
+000033BC  43F9 000037F1            403      LEA     SUCCESS_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000033C2  103C 000E                404      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000033C6  4E4F                     405      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000033C8  6100 FF2C                406      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+000033CC  6100 FD0E                407      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+000033D0  4E75                     408      RTS                     ; RETURN FROM CATCH_SNORLAX_SUCCESS: SUBROUTINE
+000033D2                           409  
+000033D2                           410  *-------------------------------------------------------
+000033D2                           411  *-------------------CATCH GYARADOS SUBROUTINE------------------
+000033D2                           412  *-------------------------------------------------------
+000033D2                           413  CATCH_GYARADOS:
+000033D2  6100 FF3A                414      BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+000033D6  43F9 000037C5            415      LEA     GYARADOS_MSG_1,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+000033DC  103C 000E                416      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+000033E0  4E4F                     417      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+000033E2  6100 FF12                418      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+000033E6                           419  
+000033E6                           420  CATCH_GYARADOS_LOOP:
+000033E6  6100 0044                421      BSR     THROW_POKEBALL  ; THROW POKEBALL
+000033EA  6100 0010                422      BSR     CHECK_CATCH_GYARADOS ; CHECK IF GYARADOS IS CAUGHT
+000033EE  0C79 0000 000038E4       423      CMP     #0,POKEBALLS    ; COMPARE POKEBALLS COUNT TO 0
+000033F6  6700 005E                424      BEQ     NO_POKEBALLS    ; IF EQUAL, BRANCH TO NO_POKEBALLS
+000033FA  60EA                     425      BRA     CATCH_GYARADOS_LOOP ; RETRY CATCHING GYARADOS
+000033FC                           426  
+000033FC                           427  CHECK_CATCH_GYARADOS:
+000033FC  103C 0001                428      MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+00003400  4E4F                     429      TRAP    #15             ; GENERATE RANDOM NUMBER
+00003402  1401                     430      MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+00003404  C43C 0001                431      AND.B   #%00000001,D2   ; KEEP ONLY THE LOWEST BIT (0 OR 1)
+00003408  B47C 0000                432      CMP     #0,D2           ; COMPARE WITH 0
+0000340C  6700 0008                433      BEQ     CATCH_GYARADOS_SUCCESS ; IF EQUAL, BRANCH TO CATCH_GYARADOS_SUCCESS
+00003410  6100 0032                434      BSR     CATCH_FAILURE   ; ELSE, BRANCH TO CATCH_FAILURE
+00003414  4E75                     435      RTS                     ; RETURN FROM CHECK_CATCH_GYARADOS
+00003416                           436  
+00003416                           437  CATCH_GYARADOS_SUCCESS:
+00003416  43F9 000037F1            438      LEA     SUCCESS_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000341C  103C 000E                439      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003420  4E4F                     440      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003422  6100 FED2                441      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003426  6100 FCB4                442      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+0000342A  4E75                     443      RTS                     ; RETURN FROM CATCH_GYARADOS_SUCCESS: SUBROUTINE
+0000342C                           444  
+0000342C                           445  *-------------------------------------------------------
+0000342C                           446  *-------------------THROW POKEBALL SUBROUTINE------------------
+0000342C                           447  *-------------------------------------------------------
+0000342C                           448  THROW_POKEBALL:
+0000342C  5339 000038E4            449      SUB.B   #1,POKEBALLS    ; DECREMENT POKEBALLS COUNT
+00003432  43F9 00003875            450      LEA     THROW_POKEBALL_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+00003438  103C 000E                451      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000343C  4E4F                     452      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+0000343E  6100 FEB6                453      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003442  4E75                     454      RTS                     ; RETURN FROM THROW_POKEBALL: SUBROUTINE
+00003444                           455  
+00003444                           456  *-------------------------------------------------------
+00003444                           457  *-------------------CATCH FAILURE SUBROUTINE------------------
+00003444                           458  *-------------------------------------------------------
+00003444                           459  CATCH_FAILURE:
+00003444  43F9 0000381A            460      LEA     FAILURE_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000344A  103C 000E                461      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+0000344E  4E4F                     462      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003450  6100 FEA4                463      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003454  4E75                     464      RTS                     ; RETURN FROM CATCH_FAILURE: SUBROUTINE
+00003456                           465  
+00003456                           466  *-------------------------------------------------------
+00003456                           467  *-------------------NO POKEBALLS SUBROUTINE------------------
+00003456                           468  *-------------------------------------------------------
+00003456                           469  NO_POKEBALLS:
+00003456  43F9 00003836            470      LEA     NO_POKEBALLS_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+0000345C  103C 000E                471      MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+00003460  4E4F                     472      TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+00003462  6100 FE92                473      BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+00003466  6100 FC74                474      BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+0000346A  4E75                     475      RTS                     ; RETURN FROM NO_POKEBALLS: SUBROUTINE
+0000346C                           476  
+0000346C                           477  *-------------------------------------------------------
+0000346C                           478  *-------------------DATA DECLARATIONS--------------------
+0000346C                           479  *-------------------------------------------------------
+0000346C                           480  
+0000346C= 0D 0A 00                 481  CRLF:           DC.B    $0D,$0A,0
+0000346F= 2A 2A 2A 2A 2A 2A ...    482  WELCOME_MSG:    DC.B    '************************************************************'
+000034AB= 0D 0A                    483                  DC.B    $0D,$0A
+000034AD= 57 45 4C 43 4F 4D ...    484                  DC.B    'WELCOME TO THE POKEMON WORLD! '
+000034CB= 0D 0A                    485                  DC.B    $0D,$0A
+000034CD= 43 48 4F 4F 53 45 ...    486                  DC.B    'CHOOSE YOUR STARTER POKEMON:'
+000034E9= 0D 0A                    487                  DC.B    $0D,$0A
+000034EB= 31 2E 20 42 55 4C ...    488                  DC.B    '1. BULBASAUR (GRASS TYPE)'
+00003504= 0D 0A                    489                  DC.B    $0D,$0A
+00003506= 32 2E 20 43 48 41 ...    490                  DC.B    '2. CHARMANDER (FIRE TYPE)'
+0000351F= 0D 0A                    491                  DC.B    $0D,$0A
+00003521= 33 2E 20 53 51 55 ...    492                  DC.B    '3. SQUIRTLE (WATER TYPE)'
+00003539= 0D 0A                    493                  DC.B    $0D,$0A
+0000353B= 2A 2A 2A 2A 2A 2A ...    494                  DC.B    '************************************************************'
+00003577= 0D 0A 00                 495                  DC.B    $0D,$0A,0
+0000357A= 45 4E 54 45 52 20 ...    496  CHOOSE_MSG:     DC.B    'ENTER THE NUMBER OF YOUR CHOICE: ',0
+0000359C= 41 20 57 49 4C 44 ...    497  BATTLE_MSG:     DC.B    'A WILD POKEMON APPEARED!',0
+000035B5= 55 50 44 41 54 49 ...    498  UPDATE_MSG:     DC.B    'UPDATING BATTLE STATUS...',0
+000035CF= 52 45 44 52 41 57 ...    499  DRAW_MSG:       DC.B    'REDRAWING BATTLE SCENE...',0
+000035E9= 59 4F 55 20 57 4F ...    500  WIN_MSG:        DC.B    'YOU WON THE BATTLE!',0
+000035FD= 59 4F 55 20 4C 4F ...    501  LOSE_MSG:       DC.B    'YOU LOST THE BATTLE!',0
+00003612= 45 4E 54 45 52 20 ...    502  REPLAY_MSG:     DC.B    'ENTER 0 TO QUIT, ANY OTHER NUMBER TO REPLAY: ',0
+00003640= 50 52 45 53 53 20 ...    503  CONTINUE_MSG:   DC.B    'PRESS ANY KEY TO CONTINUE: ',0
+0000365C= 50 4C 41 59 45 52 ...    504  HUD_MSG:        DC.B    'PLAYER HP: ',0
+00003668= 4F 50 50 4F 4E 45 ...    505  OPPONENT_HUD_MSG: DC.B 'OPPONENT HP: ',0
+00003676= 43 48 4F 4F 53 45 ...    506  PLAYER_ATTACK_MSG: DC.B 'CHOOSE YOUR ATTACK (1-3): ',0
+00003692                           507  HEALTH:         DS.W    1   ; PLAYER'S HEALTH
+00003694                           508  SCORE:          DS.W    1   ; RESERVE SPACE FOR SCORE
+00003696                           509  PLAYER_HP:      DS.W    1   ; PLAYER'S HP
+00003698                           510  OPPONENT_HP:    DS.W    1   ; OPPONENT'S HP
+0000369A                           511  BATTLE_ENDED:   DS.B    1   ; FLAG TO INDICATE IF BATTLE ENDED
+0000369B= 59 4F 55 20 53 45 ...    512  SELECTED_MSG:   DC.B    'YOU SELECTED ',0
+000036A9= 42 55 4C 42 41 53 ...    513  BULBASAUR_MSG:  DC.B    'BULBASAUR',0
+000036B3= 43 48 41 52 4D 41 ...    514  CHARMANDER_MSG: DC.B    'CHARMANDER',0
+000036BE= 53 51 55 49 52 54 ...    515  SQUIRTLE_MSG:   DC.B    'SQUIRTLE',0
+000036C7= 49 4E 56 41 4C 49 ...    516  INVALID_MSG:    DC.B    'INVALID CHOICE. PLEASE TRY AGAIN.',0
+000036E9= 43 48 4F 4F 53 45 ...    517  CHOOSE_PATH_MSG: DC.B    'CHOOSE YOUR PATH: 1. PEWTER CITY 2. CERULEAN CITY: ',0
+0000371D= 42 52 4F 43 4B 3A ...    518  BROCK_DIALOGUE:  DC.B    'BROCK: WELCOME TO PEWTER CITY! THERE IS A RARE SNORLAX HERE!',0
+0000375A= 4D 49 53 54 59 3A ...    519  MISTY_DIALOGUE:  DC.B    'MISTY: WELCOME TO CERULEAN CITY! THERE IS A RARE GYARADOS HERE!',0
+0000379A= 59 4F 55 20 46 4F ...    520  SNORLAX_MSG_1:  DC.B    'YOU FOUND A WILD SNORLAX!',0
+000037B4= 54 52 59 20 54 4F ...    521  SNORLAX_MSG_2:  DC.B    'TRY TO CATCH IT!',0
+000037C5= 59 4F 55 20 46 4F ...    522  GYARADOS_MSG_1: DC.B    'YOU FOUND A WILD GYARADOS!',0
+000037E0= 54 52 59 20 54 4F ...    523  GYARADOS_MSG_2: DC.B    'TRY TO CATCH IT!',0
+000037F1= 43 4F 4E 47 52 41 ...    524  SUCCESS_MSG:     DC.B    'CONGRATULATIONS! YOU CAUGHT THE POKEMON!',0
+0000381A= 4F 48 20 4E 4F 21 ...    525  FAILURE_MSG:     DC.B    'OH NO! THE POKEMON ESCAPED!',0
+00003836= 59 4F 55 20 48 41 ...    526  NO_POKEBALLS_MSG: DC.B    'YOU HAVE NO MORE POKEBALLS! THE POKEMON FLED!',0
+00003864= 50 4F 4B 45 42 41 ...    527  POKEBALLS_MSG:   DC.B    'POKEBALLS LEFT: ',0
+00003875= 54 48 52 4F 57 49 ...    528  THROW_POKEBALL_MSG: DC.B 'THROWING A POKEBALL...',0
+0000388C                           529  
+0000388C= 31 00 32 00 33 00        530  BULBASAUR_ATTACKS: DC.B '1', 0, '2', 0, '3', 0
+00003892= 34 00 35 00 36 00        531  CHARMANDER_ATTACKS: DC.B '4', 0, '5', 0, '6', 0
+00003898= 37 00 38 00 39 00        532  SQUIRTLE_ATTACKS: DC.B '7', 0, '8', 0, '9', 0
+0000389E                           533  
+0000389E= 4F 50 50 4F 4E 45 ...    534  OPPONENT_ATTACK_1_MSG: DC.B 'OPPONENT USED TACKLE!', 0
+000038B4= 4F 50 50 4F 4E 45 ...    535  OPPONENT_ATTACK_2_MSG: DC.B 'OPPONENT USED QUICK ATTACK!', 0
+000038D0= 4F 50 50 4F 4E 45 ...    536  OPPONENT_ATTACK_3_MSG: DC.B 'OPPONENT USED SLAM!', 0
+000038E4                           537  POKEBALLS:       DS.B    1   ; COUNT OF POKEBALLS
+000038E5                           538  
+000038E5                           539      END START
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BATTLE              3112
+BATTLE_ENDED        369A
+BATTLE_EXIT         3162
+BATTLE_LOOP         3138
+BATTLE_MSG          359C
+BROCK_DIALOGUE      371D
+BULBASAUR_ATTACKS   388C
+BULBASAUR_MSG       36A9
+CATCH_FAILURE       3444
+CATCH_GYARADOS      33D2
+CATCH_GYARADOS_LOOP  33E6
+CATCH_GYARADOS_SUCCESS  3416
+CATCH_SNORLAX       337A
+CATCH_SNORLAX_LOOP  338C
+CATCH_SNORLAX_SUCCESS  33BC
+CERULEAN_CITY       3366
+CHARMANDER_ATTACKS  3892
+CHARMANDER_MSG      36B3
+CHECK_CATCH_GYARADOS  33FC
+CHECK_CATCH_SNORLAX  33A2
+CHECK_WIN_CONDITION  3228
+CHOOSE_MSG          357A
+CHOOSE_PATH         3324
+CHOOSE_PATH_MSG     36E9
+CHOOSE_POKEMON      3024
+CONTINUE            32F6
+CONTINUE_MSG        3640
+CRLF                346C
+DISPLAY_SELECTION   30BA
+DRAW                3100
+DRAW_MSG            35CF
+END                 3006
+ENDL                330E
+EXIT                0
+FAILURE_MSG         381A
+GAME                3000
+GAMELOOP            30DC
+GYARADOS_MSG_1      37C5
+GYARADOS_MSG_2      37E0
+HEALTH              3692
+HUD                 327A
+HUD_MSG             365C
+INVALID_CHOICE      30AC
+INVALID_MSG         36C7
+LOSE                325E
+LOSE_MSG            35FD
+LOSE_POINT          8
+MAX_HP              19
+MAX_POKEBALLS       5
+MIN_HP              1
+MISTY_DIALOGUE      375A
+NO_POKEBALLS        3456
+NO_POKEBALLS_MSG    3836
+OPPONENT_ATTACK_1   31EC
+OPPONENT_ATTACK_1_MSG  389E
+OPPONENT_ATTACK_2   3200
+OPPONENT_ATTACK_2_MSG  38B4
+OPPONENT_ATTACK_3   3214
+OPPONENT_ATTACK_3_MSG  38D0
+OPPONENT_HP         3698
+OPPONENT_HUD_MSG    3668
+OPPONENT_TURN       31C6
+PEWTER_CITY         3352
+PLAYER_ATTACK_1     3190
+PLAYER_ATTACK_2     31A0
+PLAYER_ATTACK_3     31B2
+PLAYER_ATTACK_MSG   3676
+PLAYER_HP           3696
+PLAYER_TURN         3164
+POKEBALLS           38E4
+POKEBALLS_MSG       3864
+REPLAY              32D4
+REPLAY_MSG          3612
+SCORE               3694
+SELECTED_MSG        369B
+SELECT_BULBASAUR    305E
+SELECT_CHARMANDER   3078
+SELECT_SQUIRTLE     3092
+SNORLAX_MSG_1       379A
+SNORLAX_MSG_2       37B4
+SQUIRTLE_ATTACKS    3898
+SQUIRTLE_MSG        36BE
+START               1000
+SUCCESS_MSG         37F1
+THROW_POKEBALL      342C
+THROW_POKEBALL_MSG  3875
+UPDATE              30EE
+UPDATE_MSG          35B5
+WELCOME             300A
+WELCOME_MSG         346F
+WIN                 3242
+WIN_MSG             35E9
+WIN_POINT           5

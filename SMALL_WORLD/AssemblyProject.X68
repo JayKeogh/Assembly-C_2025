@@ -1,5 +1,5 @@
 *-------------------------------------------------------
-* STARTING MEMORY ADDRESS FOR THE PROGRAMME $1000
+* STARTING MEMORY ADDRESS FOR THE PROGRAM $1000
 *-------------------------------------------------------
     ORG $1000
 *-------------------------------------------------------
@@ -12,29 +12,30 @@
 EXIT        EQU 0           ; USED TO EXIT ASSEMBLY PROGRAM
 MIN_HP      EQU 1           ; MIN HP FOR POKEMON
 MAX_HP      EQU 25          ; MAX HP FOR POKEMON
-MIN_ATTACKS EQU 1           ; MIN NUMBER OF ATTACKS
-MAX_ATTACKS EQU 4           ; MAX NUMBER OF ATTACKS
-WIN_POINT   EQU 5           ; POINTS GAINED ON WINNING A BATTLE
-LOSE_POINT  EQU 8           ; POINTS LOST ON LOSING A BATTLE
+WIN_POINT   EQU 5           ; POINTS GAINED ON WIN
+LOSE_POINT  EQU 8           ; POINTS LOST ON LOSS
+MAX_POKEBALLS EQU 5         ; MAX NUMBER OF POKEBALLS
 
 * START OF GAME
 START:
-    MOVE.B  #100, $4000     ; PUT POINTS IN MEMORY LOCATION $4000
-    LEA     $4000, A3       ; ASSIGN ADDRESS A3 TO THAT MEMORY LOCATION
+    MOVE.B  #100,$4000      ; PUT POINTS IN MEMORY LOCATION $4000
+    LEA     $4000,A3        ; ASSIGN ADDRESS A3 TO THAT MEMORY LOCATION
+    MOVE.B  #MAX_POKEBALLS,POKEBALLS ; INITIALIZE POKEBALLS
 
     BSR     WELCOME         ; BRANCH TO THE WELCOME SUBROUTINE
-    ; TODO: Implement choosing a starter Pokémon
-    ; TODO: Implement the main game loop
-    BSR     GAME            ; BRANCH TO THE GAME SUBROUTINE
+    BSR     CHOOSE_POKEMON  ; BRANCH TO CHOOSE POKEMON SUBROUTINE
+    BSR     BATTLE          ; BRANCH TO BATTLE SUBROUTINE
+    BSR     CHOOSE_PATH     ; BRANCH TO CHOOSE PATH SUBROUTINE
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
 
 * GAME LOOP
-    ORG     $3000           ; THE REST OF THE PROGRAM IS TO BE LOCATED FROM 3000 ONWARDS
+    ORG     $3000           ; THE REST OF THE PROGRAM IS TO BE LOCATED FROM $3000 ONWARDS
 
 *-------------------------------------------------------
 *-------------------GAME SUBROUTINE---------------------
 *-------------------------------------------------------
 GAME:
-    ; TODO: Implement the main game loop
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
     RTS                     ; RETURN FROM GAME: SUBROUTINE
 
 END:
@@ -45,8 +46,8 @@ END:
 *-------------------------------------------------------
 WELCOME:
     BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
-    LEA     WELCOME_MSG, A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14, D0         ; MOVE LITERAL 14 TO D0
+    LEA     WELCOME_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
     TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
     BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
     BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
@@ -56,14 +57,72 @@ WELCOME:
 *---------CHOOSE POKEMON SUBROUTINE---------------------
 *-------------------------------------------------------
 CHOOSE_POKEMON:
-    ; TODO: Implement logic to choose a Pokémon and store the choice
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     CHOOSE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+
+    MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+
+    CMP     #1,D1           ; COMPARE D1 TO 1
+    BEQ     SELECT_BULBASAUR ; IF EQUAL, BRANCH TO SELECT_BULBASAUR
+    CMP     #2,D1           ; COMPARE D1 TO 2
+    BEQ     SELECT_CHARMANDER ; IF EQUAL, BRANCH TO SELECT_CHARMANDER
+    CMP     #3,D1           ; COMPARE D1 TO 3
+    BEQ     SELECT_SQUIRTLE ; IF EQUAL, BRANCH TO SELECT_SQUIRTLE
+    BSR     INVALID_CHOICE  ; ELSE, BRANCH TO INVALID_CHOICE
+    BSR     CHOOSE_POKEMON  ; RETRY CHOOSING POKEMON
     RTS                     ; RETURN FROM CHOOSE_POKEMON: SUBROUTINE
+
+SELECT_BULBASAUR:
+    LEA     BULBASAUR_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+    MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+    LEA     BULBASAUR_ATTACKS,A4 ; LOAD BULBASAUR ATTACKS
+    BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+    RTS                     ; RETURN FROM SELECT_BULBASAUR: SUBROUTINE
+
+SELECT_CHARMANDER:
+    LEA     CHARMANDER_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+    MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+    LEA     CHARMANDER_ATTACKS,A4 ; LOAD CHARMANDER ATTACKS
+    BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+    RTS                     ; RETURN FROM SELECT_CHARMANDER: SUBROUTINE
+
+SELECT_SQUIRTLE:
+    LEA     SQUIRTLE_MSG,A2 ; ASSIGN POKEMON NAME TO ADDRESS REGISTER A2
+    MOVE.B  #MAX_HP,PLAYER_HP ; SET PLAYER HP TO MAX
+    LEA     SQUIRTLE_ATTACKS,A4 ; LOAD SQUIRTLE ATTACKS
+    BSR     DISPLAY_SELECTION ; BRANCH TO DISPLAY_SELECTION SUBROUTINE
+    RTS                     ; RETURN FROM SELECT_SQUIRTLE: SUBROUTINE
+
+INVALID_CHOICE:
+    LEA     INVALID_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    RTS                     ; RETURN FROM INVALID_CHOICE: SUBROUTINE
+
+DISPLAY_SELECTION:
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     SELECTED_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.L  A2,A1           ; MOVE POKEMON NAME ADDRESS TO A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    RTS                     ; RETURN FROM DISPLAY_SELECTION: SUBROUTINE
 
 *-------------------------------------------------------
 *----------------GAMELOOP (MAIN LOOP)-------------------
 *-------------------------------------------------------
 GAMELOOP:
-    ; TODO: Implement the main game loop logic
+    BSR     BATTLE          ; BRANCH TO BATTLE SUBROUTINE
+    BSR     UPDATE          ; BRANCH TO UPDATE GAME SUBROUTINE
+    BSR     HUD             ; BRANCH TO HUD SUBROUTINE
+    BSR     REPLAY          ; BRANCH TO REPLAY SUBROUTINE
     RTS                     ; RETURN FROM GAMELOOP: SUBROUTINE
 
 *-------------------------------------------------------
@@ -71,7 +130,10 @@ GAMELOOP:
 * COMPLETE QUEST
 *-------------------------------------------------------
 UPDATE:
-    ; TODO: Implement update logic
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     UPDATE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
     RTS
 
 *-------------------------------------------------------
@@ -80,116 +142,399 @@ UPDATE:
 * QUEST
 *-------------------------------------------------------
 DRAW:
-    ; TODO: Implement draw logic
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     DRAW_MSG,A1     ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
     RTS                     ; RETURN FROM DRAW: SUBROUTINE
 
 *-------------------------------------------------------
 *--------------------BATTLE SUBROUTINE------------------
 *-------------------------------------------------------
 BATTLE:
-    ; TODO: Implement battle logic
-    RTS                     ; RETURN FROM BATTLE: SUBROUTINE
+    MOVE.B  #MAX_HP,OPPONENT_HP ; SET OPPONENT HP TO MAX
+    MOVE.B  #MAX_HP,PLAYER_HP   ; RESTORE PLAYER HP TO MAX
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     BATTLE_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
 
-*-------------------------------------------------------
-*--------------------ATTACK SUBROUTINE------------------
-*-------------------------------------------------------
-ATTACK:
-    ; TODO: Implement attack logic
-    RTS                     ; RETURN FROM ATTACK: SUBROUTINE
+    CLR.B   BATTLE_ENDED    ; CLEAR BATTLE ENDED FLAG
 
-*-------------------------------------------------------
-*-----------------HEADS UP DISPLAY (SCORE)--------------
-*-------------------------------------------------------
+BATTLE_LOOP:
+    BSR     HUD             ; UPDATE HUD BEFORE EACH TURN
+    BSR     PLAYER_TURN     ; PLAYER'S TURN
+    BSR     CHECK_WIN_CONDITION ; CHECK WIN CONDITION
+    TST.B   BATTLE_ENDED    ; CHECK IF BATTLE ENDED
+    BNE     BATTLE_EXIT     ; IF BATTLE ENDED, EXIT LOOP
+    BSR     OPPONENT_TURN   ; OPPONENT'S TURN
+    BSR     CHECK_WIN_CONDITION ; CHECK WIN CONDITION
+    TST.B   BATTLE_ENDED    ; CHECK IF BATTLE ENDED
+    BNE     BATTLE_EXIT     ; IF BATTLE ENDED, EXIT LOOP
+    BRA     BATTLE_LOOP     ; REPEAT BATTLE LOOP
+
+BATTLE_EXIT:
+    RTS                     ; RETURN FROM BATTLE SUBROUTINE
+
+PLAYER_TURN:
+    LEA     PLAYER_ATTACK_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    ; Assume D1 contains the chosen attack (1-3)
+    CMP     #1,D1           ; COMPARE D1 TO 1
+    BEQ     PLAYER_ATTACK_1 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_1
+    CMP     #2,D1           ; COMPARE D1 TO 2
+    BEQ     PLAYER_ATTACK_2 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_2
+    CMP     #3,D1           ; COMPARE D1 TO 3
+    BEQ     PLAYER_ATTACK_3 ; IF EQUAL, BRANCH TO PLAYER_ATTACK_3
+    RTS                     ; RETURN FROM PLAYER_TURN
+
+PLAYER_ATTACK_1:
+    LEA     (A4),A1         ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #5,OPPONENT_HP  ; SUBTRACT 5 FROM OPPONENT HP
+    RTS                     ; RETURN FROM PLAYER_ATTACK_1
+
+PLAYER_ATTACK_2:
+    LEA     2(A4),A1        ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #7,OPPONENT_HP  ; SUBTRACT 7 FROM OPPONENT HP
+    RTS                     ; RETURN FROM PLAYER_ATTACK_2
+
+PLAYER_ATTACK_3:
+    LEA     4(A4),A1        ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #10,OPPONENT_HP ; SUBTRACT 10 FROM OPPONENT HP
+    RTS                     ; RETURN FROM PLAYER_ATTACK_3
+
+OPPONENT_TURN:
+    MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+    TRAP    #15             ; GENERATE RANDOM NUMBER
+    MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+    AND.B   #%00000011,D2   ; KEEP ONLY THE LOWER 2 BITS (0-3)
+    CMP     #1,D2           ; COMPARE WITH 1
+    BEQ     OPPONENT_ATTACK_1 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_1
+    CMP     #2,D2           ; COMPARE WITH 2
+    BEQ     OPPONENT_ATTACK_2 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_2
+    CMP     #3,D2           ; COMPARE WITH 3
+    BEQ     OPPONENT_ATTACK_3 ; IF EQUAL, BRANCH TO OPPONENT_ATTACK_3
+    RTS                     ; RETURN FROM OPPONENT_TURN
+
+OPPONENT_ATTACK_1:
+    LEA     OPPONENT_ATTACK_1_MSG,A1 ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #4,PLAYER_HP    ; SUBTRACT 4 FROM PLAYER HP
+    RTS                     ; RETURN FROM OPPONENT_ATTACK_1
+
+OPPONENT_ATTACK_2:
+    LEA     OPPONENT_ATTACK_2_MSG,A1 ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #6,PLAYER_HP    ; SUBTRACT 6 FROM PLAYER HP
+    RTS                     ; RETURN FROM OPPONENT_ATTACK_2
+
+OPPONENT_ATTACK_3:
+    LEA     OPPONENT_ATTACK_3_MSG,A1 ; LOAD ATTACK NAME
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    SUB.B   #8,PLAYER_HP    ; SUBTRACT 8 FROM PLAYER HP
+    RTS                     ; RETURN FROM OPPONENT_ATTACK_3
+
+CHECK_WIN_CONDITION:
+    CMP     #0,PLAYER_HP    ; COMPARE PLAYER HP TO 0
+    BLE     LOSE            ; IF LESS OR EQUAL, BRANCH TO LOSE
+    CMP     #0,OPPONENT_HP  ; COMPARE OPPONENT HP TO 0
+    BLE     WIN             ; IF LESS OR EQUAL, BRANCH TO WIN
+    RTS                     ; RETURN FROM CHECK_WIN_CONDITION
+
+WIN:
+    LEA     WIN_MSG,A1      ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  (A3),D1         ; LOAD CURRENT SCORE
+    ADD.B   #WIN_POINT,D1   ; ADD WIN POINTS TO SCORE
+    MOVE.B  D1,(A3)         ; STORE UPDATED SCORE
+    MOVE.B  #1,BATTLE_ENDED ; SET BATTLE ENDED FLAG
+    RTS                     ; RETURN FROM WIN: SUBROUTINE
+
+LOSE:
+    LEA     LOSE_MSG,A1     ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  (A3),D1         ; LOAD CURRENT SCORE
+    SUB.B   #LOSE_POINT,D1  ; SUBTRACT LOSE POINTS FROM SCORE
+    MOVE.B  D1,(A3)         ; STORE UPDATED SCORE
+    MOVE.B  #1,BATTLE_ENDED ; SET BATTLE ENDED FLAG
+    RTS                     ; RETURN FROM LOSE: SUBROUTINE
+
 HUD:
-    ; TODO: Implement HUD logic
-    RTS
-
-*-------------------------------------------------------
-*-----------------------BEING ATTACKED------------------
-* THIS COULD BE USED FOR COLLISION DETECTION
-*-------------------------------------------------------
-COLLISION:
-    ; TODO: Implement collision logic
-    RTS                     ; RETURN FROM COLLISION: SUBROUTINE
-
-*-------------------------------------------------------
-*--------------------------LOOP-------------------------
-*-------------------------------------------------------
-LOOP:
-    ; TODO: Implement loop logic
-    RTS                     ; RETURN FROM LOOP: SUBROUTINE
-
-*-------------------------------------------------------
-*------------------SCREEN DECORATION--------------------
-*-------------------------------------------------------
-DECORATE:
-    ; TODO: Implement decoration logic
-    RTS                     ; RETURN FROM DECORATE: SUBROUTINE
-
-CLEAR_SCREEN:
-    ; TODO: Implement clear screen logic
-    RTS                     ; RETURN FROM CLEAR_SCREEN: SUBROUTINE
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     HUD_MSG,A1      ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  PLAYER_HP,D1    ; LOAD PLAYER HP
+    MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     OPPONENT_HUD_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  OPPONENT_HP,D1  ; LOAD OPPONENT HP
+    MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     POKEBALLS_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    MOVE.B  POKEBALLS,D1    ; LOAD POKEBALLS COUNT
+    MOVE.B  #3,D0           ; MOVE LITERAL 3 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    RTS                     ; RETURN FROM HUD: SUBROUTINE
 
 *-------------------------------------------------------
 *------------------------REPLAY-------------------------
 *-------------------------------------------------------
 REPLAY:
-    ; TODO: Implement replay logic
-    RTS                     ; RETURN FROM REPLAY: SUBROUTINE
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     REPLAY_MSG,A1   ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+
+    MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+
+    CMP     #EXIT,D1        ; COMPARE D1 TO EXIT
+    BEQ     END             ; IF EQUAL, BRANCH TO END
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
 
 *-------------------------------------------------------
 *------------------------CONTINUE-------------------------
 *-------------------------------------------------------
 CONTINUE:
     BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
-    LEA     CONTINUE_MSG, A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
-    MOVE.B  #14, D0         ; MOVE LITERAL 14 TO D0
+    LEA     CONTINUE_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
     TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
 
-    MOVE.B  #4, D0          ; MOVE LITERAL 4 TO D0
+    MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
     TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
     RTS                     ; RETURN FROM SUBROUTINE
 
 ENDL:
-    MOVEM.L D0/A1, -(A7)    ; SAVE D0 AND A1
-    MOVE    #14, D0         ; MOVE LITERAL 14 TO D0
-    LEA     CRLF, A1        ; ASSIGN CRLF TO ADDRESS REGISTER A1
+    MOVEM.L D0/A1,-(A7)     ; SAVE D0 AND A1
+    MOVE    #14,D0          ; MOVE LITERAL 14 TO DO
+    LEA     CRLF,A1         ; ASSIGN CRLF TO ADDRESS REGISTER A1
     TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
-    MOVEM.L (A7)+, D0/A1    ; RESTORE D0 AND A1
+    MOVEM.L (A7)+,D0/A1     ; RESTORE D0 AND A1
     RTS                     ; RETURN FROM ENDL: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------CHOOSE PATH SUBROUTINE------------------
+*-------------------------------------------------------
+CHOOSE_PATH:
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     CHOOSE_PATH_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+
+    MOVE.B  #4,D0           ; MOVE LITERAL 4 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+
+    CMP     #1,D1           ; COMPARE D1 TO 1
+    BEQ     PEWTER_CITY     ; IF EQUAL, BRANCH TO PEWTER_CITY
+    CMP     #2,D1           ; COMPARE D1 TO 2
+    BEQ     CERULEAN_CITY   ; IF EQUAL, BRANCH TO CERULEAN_CITY
+    BSR     INVALID_CHOICE  ; ELSE, BRANCH TO INVALID_CHOICE
+    BSR     CHOOSE_PATH     ; RETRY CHOOSING PATH
+    RTS                     ; RETURN FROM CHOOSE_PATH: SUBROUTINE
+
+PEWTER_CITY:
+    LEA     BROCK_DIALOGUE,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    BSR     CATCH_SNORLAX    ; BRANCH TO CATCH_SNORLAX SUBROUTINE
+    RTS                     ; RETURN FROM PEWTER_CITY: SUBROUTINE
+
+CERULEAN_CITY:
+    LEA     MISTY_DIALOGUE,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    BSR     CATCH_GYARADOS   ; BRANCH TO CATCH_GYARADOS SUBROUTINE
+    RTS                     ; RETURN FROM CERULEAN_CITY: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------CATCH SNORLAX SUBROUTINE------------------
+*-------------------------------------------------------
+CATCH_SNORLAX:
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     SNORLAX_MSG_1,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+
+CATCH_SNORLAX_LOOP:
+    BSR     THROW_POKEBALL  ; THROW POKEBALL
+    BSR     CHECK_CATCH_SNORLAX ; CHECK IF SNORLAX IS CAUGHT
+    CMP     #0,POKEBALLS    ; COMPARE POKEBALLS COUNT TO 0
+    BEQ     NO_POKEBALLS    ; IF EQUAL, BRANCH TO NO_POKEBALLS
+    BRA     CATCH_SNORLAX_LOOP ; RETRY CATCHING SNORLAX
+
+CHECK_CATCH_SNORLAX:
+    MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+    TRAP    #15             ; GENERATE RANDOM NUMBER
+    MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+    AND.B   #%00000001,D2   ; KEEP ONLY THE LOWEST BIT (0 OR 1)
+    CMP     #0,D2           ; COMPARE WITH 0
+    BEQ     CATCH_SNORLAX_SUCCESS ; IF EQUAL, BRANCH TO CATCH_SNORLAX_SUCCESS
+    BSR     CATCH_FAILURE   ; ELSE, BRANCH TO CATCH_FAILURE
+    RTS                     ; RETURN FROM CHECK_CATCH_SNORLAX
+
+CATCH_SNORLAX_SUCCESS:
+    LEA     SUCCESS_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+    RTS                     ; RETURN FROM CATCH_SNORLAX_SUCCESS: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------CATCH GYARADOS SUBROUTINE------------------
+*-------------------------------------------------------
+CATCH_GYARADOS:
+    BSR     ENDL            ; BRANCH TO ENDL SUBROUTINE
+    LEA     GYARADOS_MSG_1,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+
+CATCH_GYARADOS_LOOP:
+    BSR     THROW_POKEBALL  ; THROW POKEBALL
+    BSR     CHECK_CATCH_GYARADOS ; CHECK IF GYARADOS IS CAUGHT
+    CMP     #0,POKEBALLS    ; COMPARE POKEBALLS COUNT TO 0
+    BEQ     NO_POKEBALLS    ; IF EQUAL, BRANCH TO NO_POKEBALLS
+    BRA     CATCH_GYARADOS_LOOP ; RETRY CATCHING GYARADOS
+
+CHECK_CATCH_GYARADOS:
+    MOVE.B  #1,D0           ; SEED RANDOM NUMBER GENERATOR
+    TRAP    #15             ; GENERATE RANDOM NUMBER
+    MOVE.B  D1,D2           ; MOVE RANDOM NUMBER TO D2
+    AND.B   #%00000001,D2   ; KEEP ONLY THE LOWEST BIT (0 OR 1)
+    CMP     #0,D2           ; COMPARE WITH 0
+    BEQ     CATCH_GYARADOS_SUCCESS ; IF EQUAL, BRANCH TO CATCH_GYARADOS_SUCCESS
+    BSR     CATCH_FAILURE   ; ELSE, BRANCH TO CATCH_FAILURE
+    RTS                     ; RETURN FROM CHECK_CATCH_GYARADOS
+
+CATCH_GYARADOS_SUCCESS:
+    LEA     SUCCESS_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+    RTS                     ; RETURN FROM CATCH_GYARADOS_SUCCESS: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------THROW POKEBALL SUBROUTINE------------------
+*-------------------------------------------------------
+THROW_POKEBALL:
+    SUB.B   #1,POKEBALLS    ; DECREMENT POKEBALLS COUNT
+    LEA     THROW_POKEBALL_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    RTS                     ; RETURN FROM THROW_POKEBALL: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------CATCH FAILURE SUBROUTINE------------------
+*-------------------------------------------------------
+CATCH_FAILURE:
+    LEA     FAILURE_MSG,A1  ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    RTS                     ; RETURN FROM CATCH_FAILURE: SUBROUTINE
+
+*-------------------------------------------------------
+*-------------------NO POKEBALLS SUBROUTINE------------------
+*-------------------------------------------------------
+NO_POKEBALLS:
+    LEA     NO_POKEBALLS_MSG,A1 ; ASSIGN MESSAGE TO ADDRESS REGISTER A1
+    MOVE.B  #14,D0          ; MOVE LITERAL 14 TO DO
+    TRAP    #15             ; TRAP AND INTERPRET VALUE IN D0
+    BSR     CONTINUE        ; BRANCH TO CONTINUE SUBROUTINE
+    BSR     GAMELOOP        ; BRANCH TO GAMELOOP SUBROUTINE
+    RTS                     ; RETURN FROM NO_POKEBALLS: SUBROUTINE
 
 *-------------------------------------------------------
 *-------------------DATA DECLARATIONS--------------------
 *-------------------------------------------------------
 
-CRLF:           DC.B    $0D, $0A, 0
+CRLF:           DC.B    $0D,$0A,0
 WELCOME_MSG:    DC.B    '************************************************************'
-                DC.B    $0D, $0A
+                DC.B    $0D,$0A
                 DC.B    'WELCOME TO THE POKEMON WORLD! '
-                DC.B    $0D, $0A
+                DC.B    $0D,$0A
                 DC.B    'CHOOSE YOUR STARTER POKEMON:'
-                DC.B    $0D, $0A
-                DC.B    '1. PIKACHU (ELECTRIC TYPE)'
-                DC.B    $0D, $0A
-                DC.B    '2. BULBASAUR (GRASS TYPE)'
-                DC.B    $0D, $0A
-                DC.B    '3. CHARMANDER (FIRE TYPE)'
-                DC.B    $0D, $0A
+                DC.B    $0D,$0A
+                DC.B    '1. BULBASAUR (GRASS TYPE)'
+                DC.B    $0D,$0A
+                DC.B    '2. CHARMANDER (FIRE TYPE)'
+                DC.B    $0D,$0A
+                DC.B    '3. SQUIRTLE (WATER TYPE)'
+                DC.B    $0D,$0A
                 DC.B    '************************************************************'
-                DC.B    $0D, $0A, 0
-CHOOSE_MSG:     DC.B    'ENTER THE NUMBER OF YOUR CHOICE: ', 0
-BATTLE_MSG:     DC.B    'A WILD POKEMON APPEARED!', 0
-ATTACK_MSG:     DC.B    'CHOOSE AN ATTACK: 1. TACKLE 2. SPECIAL MOVE', 0
-UPDATE_MSG:     DC.B    'UPDATING BATTLE STATUS...', 0
-DRAW_MSG:       DC.B    'REDRAWING BATTLE SCENE...', 0
-HIT_MSG:        DC.B    'YOUR POKEMON WAS HIT!', 0
-MISS_MSG:       DC.B    'YOUR POKEMON DODGED THE ATTACK!', 0
-LOOP_MSG:       DC.B    '.', 0
-REPLAY_MSG:     DC.B    'ENTER 0 TO QUIT, ANY OTHER NUMBER TO REPLAY: ', 0
-CONTINUE_MSG:   DC.B    'PRESS ANY KEY TO CONTINUE: ', 0
-HUD_MSG:        DC.B    'SCORE: ', 0
+                DC.B    $0D,$0A,0
+CHOOSE_MSG:     DC.B    'ENTER THE NUMBER OF YOUR CHOICE: ',0
+BATTLE_MSG:     DC.B    'A WILD POKEMON APPEARED!',0
+UPDATE_MSG:     DC.B    'UPDATING BATTLE STATUS...',0
+DRAW_MSG:       DC.B    'REDRAWING BATTLE SCENE...',0
+WIN_MSG:        DC.B    'YOU WON THE BATTLE!',0
+LOSE_MSG:       DC.B    'YOU LOST THE BATTLE!',0
+REPLAY_MSG:     DC.B    'ENTER 0 TO QUIT, ANY OTHER NUMBER TO REPLAY: ',0
+CONTINUE_MSG:   DC.B    'PRESS ANY KEY TO CONTINUE: ',0
+HUD_MSG:        DC.B    'PLAYER HP: ',0
+OPPONENT_HUD_MSG: DC.B 'OPPONENT HP: ',0
+PLAYER_ATTACK_MSG: DC.B 'CHOOSE YOUR ATTACK (1-3): ',0
 HEALTH:         DS.W    1   ; PLAYER'S HEALTH
 SCORE:          DS.W    1   ; RESERVE SPACE FOR SCORE
+PLAYER_HP:      DS.W    1   ; PLAYER'S HP
+OPPONENT_HP:    DS.W    1   ; OPPONENT'S HP
+BATTLE_ENDED:   DS.B    1   ; FLAG TO INDICATE IF BATTLE ENDED
+SELECTED_MSG:   DC.B    'YOU SELECTED ',0
+BULBASAUR_MSG:  DC.B    'BULBASAUR',0
+CHARMANDER_MSG: DC.B    'CHARMANDER',0
+SQUIRTLE_MSG:   DC.B    'SQUIRTLE',0
+INVALID_MSG:    DC.B    'INVALID CHOICE. PLEASE TRY AGAIN.',0
+CHOOSE_PATH_MSG: DC.B    'CHOOSE YOUR PATH: 1. PEWTER CITY 2. CERULEAN CITY: ',0
+BROCK_DIALOGUE:  DC.B    'BROCK: WELCOME TO PEWTER CITY! THERE IS A RARE SNORLAX HERE!',0
+MISTY_DIALOGUE:  DC.B    'MISTY: WELCOME TO CERULEAN CITY! THERE IS A RARE GYARADOS HERE!',0
+SNORLAX_MSG_1:  DC.B    'YOU FOUND A WILD SNORLAX!',0
+SNORLAX_MSG_2:  DC.B    'TRY TO CATCH IT!',0
+GYARADOS_MSG_1: DC.B    'YOU FOUND A WILD GYARADOS!',0
+GYARADOS_MSG_2: DC.B    'TRY TO CATCH IT!',0
+SUCCESS_MSG:     DC.B    'CONGRATULATIONS! YOU CAUGHT THE POKEMON!',0
+FAILURE_MSG:     DC.B    'OH NO! THE POKEMON ESCAPED!',0
+NO_POKEBALLS_MSG: DC.B    'YOU HAVE NO MORE POKEBALLS! THE POKEMON FLED!',0
+POKEBALLS_MSG:   DC.B    'POKEBALLS LEFT: ',0
+THROW_POKEBALL_MSG: DC.B 'THROWING A POKEBALL...',0
+
+BULBASAUR_ATTACKS: DC.B '1', 0, '2', 0, '3', 0
+CHARMANDER_ATTACKS: DC.B '4', 0, '5', 0, '6', 0
+SQUIRTLE_ATTACKS: DC.B '7', 0, '8', 0, '9', 0
+
+OPPONENT_ATTACK_1_MSG: DC.B 'OPPONENT USED TACKLE!', 0
+OPPONENT_ATTACK_2_MSG: DC.B 'OPPONENT USED QUICK ATTACK!', 0
+OPPONENT_ATTACK_3_MSG: DC.B 'OPPONENT USED SLAM!', 0
+POKEBALLS:       DS.B    1   ; COUNT OF POKEBALLS
 
     END START
 
