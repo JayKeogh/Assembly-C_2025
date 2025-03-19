@@ -7,7 +7,7 @@
     ORG    $1000
 START:                  ; first instruction of program
     
-    LEA	MESSAGE, A1
+    	LEA	MESSAGE, A1
 	MOVE.B	#14, D0
 	TRAP	#15
 
