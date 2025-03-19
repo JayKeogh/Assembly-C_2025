@@ -6,14 +6,19 @@
 *-----------------------------------------------------------
     ORG    $1000
 START:                  ; first instruction of program
+    
+    LEA	MESSAGE, A1
+	MOVE.B	#14, D0
+	TRAP	#15
 
-* Put program code here
 
     SIMHALT             ; halt simulator
 
-* Put variables and constants here
+MESSAGE	DC.B	'HELLO WORLD',0
 
     END    START        ; last line of source
+
+
 
 *~Font name~Courier New~
 *~Font size~10~
